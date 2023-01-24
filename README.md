@@ -34,3 +34,15 @@ docker-compose exec nifi-stardog bash -c "./bin/nifi.sh set-single-user-credenti
 * Blog article: https://www.stardog.com/labs/blog/stardog-data-flow-automation-with-nifi/
 * Nifi cluster: https://medium.com/geekculture/host-a-fully-persisted-apache-nifi-service-with-docker-ffaa6a5f54a3
 
+## Without docker
+
+```bash
+unzip *.zip
+```
+
+Start Nifi:
+
+```bash
+bin/nifi.sh start
+```
+

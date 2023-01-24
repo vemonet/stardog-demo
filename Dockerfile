@@ -1,4 +1,5 @@
-FROM apache/nifi:1.16.3
+FROM apache/nifi:1.12.0
+# FROM apache/nifi:1.16.3
 
 # Workspace is /opt/nifi/nifi-current
 
