@@ -1,33 +1,103 @@
 version: '3'
 
+# Docs: https://docs.stardog.com/get-started/install-stardog/docker
+# Issue posted: https://community.stardog.com/t/deploy-stardog-behind-a-reverse-nginx-proxy/3126
+
 services:
-  
-  nifi-stardog:
-    build: .
-    # image: apache/nifi
+
+  # Deploy a Stardog server
+  stardog:
+    image: stardog/stardog:latest
+    container_name: stardog
     restart: unless-stopped
     volumes:
-      - ./nifi-example:/data
-
-      - ./nifi/database_repository:/opt/nifi/nifi-current/database_repository
-      - ./nifi/flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
-      - ./nifi/content_repository:/opt/nifi/nifi-current/content_repository
-      - ./nifi/provenance_repository:/opt/nifi/nifi-current/provenance_repository
-      - ./nifi/state:/opt/nifi/nifi-current/state
-      - ./nifi/logs:/opt/nifi/nifi-current/logs
-
+      - /data/stardog:/var/opt/stardog
+      - ./drivers:/var/opt/stardog-ext
     ports:
-      - 8080:8080
+      - 5820:5820
     environment:
-      - NIFI_WEB_HTTPS_PORT=8080
-      - SINGLE_USER_CREDENTIALS_USERNAME=admin
-      - SINGLE_USER_CREDENTIALS_PASSWORD=${PASSWORD:-password1234}
-      # 12 char min
+      - "STARDOG_SERVER_JAVA_ARGS=-Xmx8g -Xms8g -XX:MaxDirectMemorySize=12g"
+      - "JAVA_OPTIONS=-Djava.net.preferIPv4Stack=true"
+      - STARDOG_EXT=/var/opt/stardog-ext
+      - LETSENCRYPT_HOST=stardog.137.120.31.102.nip.io
+      - VIRTUAL_HOST=stardog.137.120.31.102.nip.io
+      - VIRTUAL_PORT=5820
+    # command:  --enable-ssl
 
-      # - NIFI_WEB_HTTP_PORT=8080 
-      # HTTP does not work because nifi cant disable auth by default,
-      # and block auth if HTTP enabled. True geniuses at work
+  heart-failure-postgres:
+    image: postgres
+    # image: postgres:10.5
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${PASSWORD:-password1234}
+      # - POSTGRES_DB=heart_failure_db
+    ports:
+      - 5432:5432
+    volumes:
+      # Copy the sql script to create tables
+      - ./sql-vkg/heart_failure_postgres.sql:/docker-entrypoint-initdb.d/heart_failure_postgres.sql
+      - ./sql-vkg/stroke-data.csv:/data/stroke-data.csv
+      # - ./postgres-data:/var/lib/postgresql/data
 
-      # - VIRTUAL_PORT=8080
-      # - LETSENCRYPT_HOST=nifi.stardog.137.120.31.102.nip.io
-      # - VIRTUAL_HOST=nifi.stardog.137.120.31.102.nip.io
+
+
+  # heart-failure-drill:
+  #   image: apache/drill
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./:/data
+  #     # - ./drill-override.conf:/opt/drill/conf/drill-override.conf
+  #   # ports:
+  #   #   - 8047:8047 # web and REST
+  #   #   - 31010:31010 # JDBC
+  #   stdin_open: true
+  #   environment:
+  #     - DRILLBIT_MAX_PROC_MEM=8G
+  #     - DRILL_HEAP=4G
+  #     - DRILL_MAX_DIRECT_MEMORY=8G
+  #     - DRILLBIT_CODE_CACHE_SIZE=1G
+
+
+  # heart-failure-mariadb:
+  #   restart: unless-stopped
+  #   image: mariadb
+  #   # ports:
+  #   #   - 3306:3306
+  #   volumes:
+  #     - ./heart_failure.sql:/docker-entrypoint-initdb.d/heart_failure.sql
+  #     - ./stroke-data.csv:/data/stroke-data.csv
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${PASSWORD-password}
+  #     MARIADB_USER: user
+  #     MARIADB_PASSWORD: ${PASSWORD-password}
+  #     MARIADB_ROOT_PASSWORD: ${PASSWORD-password}
+  #   # command: --max-allowed-packet=16M --local_infile=1
+
+
+  # heart-failure-mysql:
+  #   restart: unless-stopped
+  #   image: mysql
+  #   ports:
+  #     - 3306:3306
+  #   volumes:
+  #     - ./heart_failure.sql:/docker-entrypoint-initdb.d/heart_failure.sql
+  #     - ./stroke-data.csv:/data/stroke-data.csv
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${PASSWORD-password}
+  #     MYSQL_USER: user
+  #     MYSQL_PASSWORD: ${PASSWORD-password}
+  #     # MYSQL_DATABASE: heart_failure_db
+  #   command: --local_infile=ON
+  #   # command: --max-allowed-packet=16M --local_infile=1
+
+
+  # stardog-studio:
+  #   image: stardog/stardog-studio:current
+  #   container_name: stardog-studio
+  #   restart: unless-stopped
+  #   environment:
+  #     - LETSENCRYPT_HOST=studio.stardog.137.120.31.102.nip.io
+  #     - VIRTUAL_HOST=studio.stardog.137.120.31.102.nip.io
+  #     - VIRTUAL_PORT=8080
+  #   network_mode: bridge

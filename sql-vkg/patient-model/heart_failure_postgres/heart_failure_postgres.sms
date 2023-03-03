@@ -1,0 +1,17 @@
+
+
+# Patients stroke postgres
+MAPPING
+FROM SQL {
+  SELECT * FROM "heart_failure_db"."public"."stroke_data"
+}
+TO {
+  ?Patient_iri a <tag:stardog:designer:Heart_Failure_DB:model:Patient> ;
+    <tag:stardog:designer:Heart_Failure_DB:model:age_1> ?age ;
+    <tag:stardog:designer:Heart_Failure_DB:model:gender> ?gender ;
+    <tag:stardog:designer:Heart_Failure_DB:model:stroke_1> ?stroke_boolean_field .
+}
+WHERE {
+  BIND(TEMPLATE("tag:stardog:designer:Heart_Failure_DB:data:Patient:{id}") AS ?Patient_iri)
+  BIND(StrDt(?stroke, <http://www.w3.org/2001/XMLSchema#boolean>) AS ?stroke_boolean_field)
+}

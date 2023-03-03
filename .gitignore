@@ -1,3 +1,6 @@
-nifi/
 *.zip
+*.nar
+*.bin
+
+nifi/
 nifi-*-bin/
