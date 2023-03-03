@@ -31,7 +31,7 @@ Start Stardog and postgreSQL:
 docker-compose up -d
 ```
 
-> ℹ️ The PostgreSQL database will be automatically initialized with the schema and data in `sql-vkg/`
+> ℹ️ The PostgreSQL database will be automatically initialized using the schema and data in `sql-vkg/`
 
 ## 🧑‍💻 Create a SQL VKG
 
@@ -79,7 +79,7 @@ WHERE {
 } LIMIT 1000
 ```
 
-Or a specific VKG:
+Or a specific VKG using its name, e.g.:
 
 ```sparql
 SELECT *
