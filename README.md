@@ -1,10 +1,12 @@
 # 💫🦮 Create a Virtual Knowledge Graph with Stardog
 
+Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplestore using data from a PostgreSQL database.
+
 ## 🚀 Deploy the stack
 
-Requirements: docker, docker-compose
+Requirements: docker 🐳 
 
-With a local Stardog triplestore and a PostgreSQL database to create a Virtual Knowledge Graph (VKG).
+Deploys a local Stardog triplestore and a PostgreSQL database to create a Virtual Knowledge Graph (VKG).
 
 ⚠️ You will need to get your Stardog license at https://www.stardog.com/license-request
 
@@ -32,17 +34,6 @@ docker-compose up -d
 > ℹ️ The PostgreSQL database will be automatically initialized with the schema and data in `sql-vkg/`
 
 ## 🧑‍💻 Create a SQL VKG
-
-Tutorial to create a Virtual Knowledge Graph (VKG) from data in a PostgreSQL database.
-
-### 📊 Input data
-
-For this tutorial we will use the stroke prediction dataset: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
-
-Other potential datasets:
-
-* https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
-* Unstructured: https://zenodo.org/record/1421616#.Y5iWerKZOLo
 
 ### 🔌 Create the data source in Stardog Studio
 
@@ -111,6 +102,15 @@ SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-data.csv` LIMI
 
 ## ℹ️ Additional infos
 
+### 📊 Input data
+
+For this demo we use the stroke prediction dataset: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+
+Other potential datasets:
+
+* https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
+* Unstructured: https://zenodo.org/record/1421616#.Y5iWerKZOLo
+
 ### 🧞 Generate SQL schema
 
 Install dependencies:
@@ -138,7 +138,7 @@ docker-compose exec stardog stardog-admin user passwd --username admin admin
 
 ### 🔗 Links
 
-Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
+* Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
 
-APIs docs: https://stardog-union.github.io/http-docs/
+* APIs docs: https://stardog-union.github.io/http-docs/
 
