@@ -1,4 +1,4 @@
-# 💫🦮 Create a Virtual Knowledge Graph with Stardog
+# 🦮💫 Create a Virtual Knowledge Graph with Stardog
 
 Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplestore using data from a PostgreSQL database.
 
@@ -37,7 +37,7 @@ docker-compose up -d
 
 ### 🔌 Create the data source in Stardog Studio
 
-Go to the [**Data** tab in Stardog Studio](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
+Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
 
 Select PostgreSQL for the **Data Source Type**
 
@@ -51,7 +51,7 @@ The JDBC username is `postgres`, and the password is the one you defined or `pas
 
 ### 🧶 Create the model in Stardog Designer
 
-Go to the [Stardog Designer](https://cloud.stardog.com/u/1/designer/#/)
+Go to the [**Stardog Designer**](https://cloud.stardog.com/u/1/designer/#/)
 
 You can either import the model and mappings we created with the `sql-vkg/patient-model/Heart_Failure_DB.stardogdesigner` file.
 
@@ -65,9 +65,9 @@ Or you can create a new project and mappings manually:
 
 Finally publish your model to the database of your choice in Stardog
 
-### 🏁 Query the Virtual Graph in Stardog
+### 🏁 Query the Virtual Graph in Stardog Studio
 
-Go to the **Workspace** tab in **Stardog Studio**
+Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
 
 To query all VKGs with SPARQL:
 
