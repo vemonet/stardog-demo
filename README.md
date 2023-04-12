@@ -6,19 +6,19 @@ Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplest
 
 Requirements: docker 🐳 
 
-Deploys a local Stardog triplestore and a PostgreSQL database to create a Virtual Knowledge Graph (VKG).
+Deploys a local Stardog triplestore, a PostgreSQL database, and a MariaDB SQL database to create a Virtual Knowledge Graph (VKG).
 
 ⚠️ You will need to get your Stardog license at https://www.stardog.com/license-request
 
 Place the `stardog-license-key.bin` file in the root folder of this repository.
 
-Download the JDBC drivers by running this script:
+Download the JDBC drivers in the `drivers/` folder by running this script:
 
 ```bash
 ./prepare.sh
 ```
 
-> Optionally create a `.env` file with the password for the SQL database, otherwise the default is `password1234`:
+> Optionally create a `.env` file with the password for the SQL database, otherwise the default is `passwordtochange`:
 >
 > ```bash
 > echo "PASSWORD=yourpassword" > .env

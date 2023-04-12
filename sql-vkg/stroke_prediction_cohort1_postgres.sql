@@ -1,5 +1,5 @@
-CREATE DATABASE stroke_prediction_dataset;
-\c stroke_prediction_dataset
+CREATE DATABASE stroke_prediction_dataset_cohort1;
+\c stroke_prediction_dataset_cohort1
 
 CREATE TABLE stroke_prediction_cohort1 (
 	id INTEGER NOT NULL,
