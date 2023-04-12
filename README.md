@@ -90,12 +90,14 @@ WHERE {
 } LIMIT 1000
 ```
 
+Directly query the SPARQL endpoint at https://stardog.137.120.31.102.nip.io/stroke-prediction-demo
+
 ## 🔩 Create a VKG with Apache Drill
 
 SQL query:
 
 ```sql
-SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-data.csv` LIMIT 3
+SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-prediction-cohort1.csv` LIMIT 3
 ```
 
 > TODO
@@ -104,12 +106,9 @@ SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-data.csv` LIMI
 
 ### 📊 Input data
 
-For this demo we use the stroke prediction dataset: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+For this demo we use a dataset splitted in 2 to simulate 2 cohorts: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
 
-Other potential datasets:
-
-* https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
-* Unstructured: https://zenodo.org/record/1421616#.Y5iWerKZOLo
+> Other potential datasets: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction, or with unstructured data: https://zenodo.org/record/1421616#.Y5iWerKZOLo
 
 ### 🧞 Generate SQL schema
 
@@ -124,7 +123,7 @@ pip install csvkit mysql-connector-python
 Generate schema from CSV. Note it needs to be manually fixed as they don't add `(128)` after the VARCHAR
 
 ```bash
-csvsql --db mysql://user:password@localhost:3306/heart-failure-db --insert stroke-data.csv
+csvsql --db mysql://user:password@localhost:3306/heart-failure-db --insert stroke-prediction-cohort1.csv
 ```
 
 ### 🔒️ Change the Stardog admin password

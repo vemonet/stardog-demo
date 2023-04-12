@@ -24,21 +24,37 @@ services:
       - VIRTUAL_PORT=5820
     # command:  --enable-ssl
 
-  heart-failure-postgres:
+  stroke-prediction-postgres-cohort1:
     image: postgres
     # image: postgres:10.5
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${PASSWORD:-password1234}
+      - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
       # - POSTGRES_DB=heart_failure_db
     ports:
       - 5432:5432
     volumes:
       # Copy the sql script to create tables
-      - ./sql-vkg/heart_failure_postgres.sql:/docker-entrypoint-initdb.d/heart_failure_postgres.sql
-      - ./sql-vkg/stroke-data.csv:/data/stroke-data.csv
-      # - ./postgres-data:/var/lib/postgresql/data
+      - ./sql-vkg/stroke_prediction_cohort1_postgres.sql:/docker-entrypoint-initdb.d/stroke_prediction_cohort1_postgres.sql
+      - ./sql-vkg/stroke-prediction-cohort1.csv:/data/stroke-prediction-cohort1.csv
+      # - ./data/postgres:/var/lib/postgresql/data
+
+
+  stroke-prediction-mariadb-cohort2:
+    restart: unless-stopped
+    image: mariadb
+    # ports:
+    #   - 3306:3306
+    volumes:
+      - ./sql-vkg/stroke_prediction_cohort2_mariadb.sql:/docker-entrypoint-initdb.d/stroke_prediction_cohort2_mariadb.sql
+      - ./sql-vkg/stroke-prediction-cohort2.csv:/data/stroke-prediction-cohort2.csv
+      # - ./data/mariadb:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${PASSWORD-passwordtochange}
+      MARIADB_USER: user
+    # command: --max-allowed-packet=16M --local_infile=1
+
 
 
 
@@ -57,39 +73,6 @@ services:
   #     - DRILL_HEAP=4G
   #     - DRILL_MAX_DIRECT_MEMORY=8G
   #     - DRILLBIT_CODE_CACHE_SIZE=1G
-
-
-  # heart-failure-mariadb:
-  #   restart: unless-stopped
-  #   image: mariadb
-  #   # ports:
-  #   #   - 3306:3306
-  #   volumes:
-  #     - ./heart_failure.sql:/docker-entrypoint-initdb.d/heart_failure.sql
-  #     - ./stroke-data.csv:/data/stroke-data.csv
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${PASSWORD-password}
-  #     MARIADB_USER: user
-  #     MARIADB_PASSWORD: ${PASSWORD-password}
-  #     MARIADB_ROOT_PASSWORD: ${PASSWORD-password}
-  #   # command: --max-allowed-packet=16M --local_infile=1
-
-
-  # heart-failure-mysql:
-  #   restart: unless-stopped
-  #   image: mysql
-  #   ports:
-  #     - 3306:3306
-  #   volumes:
-  #     - ./heart_failure.sql:/docker-entrypoint-initdb.d/heart_failure.sql
-  #     - ./stroke-data.csv:/data/stroke-data.csv
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ${PASSWORD-password}
-  #     MYSQL_USER: user
-  #     MYSQL_PASSWORD: ${PASSWORD-password}
-  #     # MYSQL_DATABASE: heart_failure_db
-  #   command: --local_infile=ON
-  #   # command: --max-allowed-packet=16M --local_infile=1
 
 
   # stardog-studio:

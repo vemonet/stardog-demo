@@ -1,13 +1,13 @@
-CREATE DATABASE heart_failure_db;
-\c heart_failure_db
+CREATE DATABASE stroke_prediction_dataset;
+USE stroke_prediction_dataset;
 
-CREATE TABLE stroke_data (
+CREATE TABLE stroke_prediction_cohort2 (
 	id INTEGER NOT NULL,
 	gender VARCHAR(128) NOT NULL,
 	age VARCHAR(128) NOT NULL,
 	hypertension BOOLEAN NOT NULL,
 	heart_disease BOOLEAN NOT NULL,
-	ever_married BOOLEAN NOT NULL,
+	ever_married VARCHAR(128) NOT NULL,
 	work_type VARCHAR(128) NOT NULL,
 	Residence_type VARCHAR(128) NOT NULL,
 	avg_glucose_level VARCHAR(128) NOT NULL,
@@ -16,7 +16,9 @@ CREATE TABLE stroke_data (
 	stroke BOOLEAN NOT NULL
 );
 
-COPY stroke_data FROM '/data/stroke-data.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true);
+LOAD DATA INFILE '/data/stroke-prediction-cohort2.csv'
+INTO TABLE stroke_prediction_cohort2
+FIELDS TERMINATED BY ','
+IGNORE 1 LINES;
 
-
-SELECT * FROM stroke_data LIMIT 3;
+SELECT * FROM stroke_prediction_cohort2 LIMIT 3;
