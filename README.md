@@ -35,19 +35,36 @@ docker-compose up -d
 
 ## 🧑‍💻 Create a SQL VKG
 
-### 🔌 Create the data source in Stardog Studio
+### 🔌 Create the data sources in Stardog Studio
 
 Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
 
-Select PostgreSQL for the **Data Source Type**
+**Add PostgreSQL cohort1:**
 
-Use the JDBC Connection URL:
+1. Data Source Type: PostgreSQL
 
-```bash
-jdbc:postgresql://heart-failure-postgres:5432/heart_failure_db
-```
+2. JDBC Connection URL:
 
-The JDBC username is `postgres`, and the password is the one you defined or `password1234` if you let the default, keep `org.postgresql.Driver` as Driver Class.
+   ```
+   jdbc:postgresql://stroke-prediction-postgres-cohort1:5432/stroke_prediction_dataset_cohort1
+   ```
+
+3. JDBC username is `postgres`, and the password is the one you defined (or `passwordtochange` if you kept the default)
+4. Driver Class: keep `org.postgresql.Driver` 
+
+**Add MariaDB cohort2:**
+
+1. Data Source Type: MariaDB
+
+2. JDBC Connection URL:
+
+   ```
+   jdbc:mariadb://stroke-prediction-mariadb-cohort2:3306/stroke_prediction_dataset_cohort2
+   ```
+
+3. JDBC username is `root`, and the password is the one you defined (or `passwordtochange` if you kept the default), 
+
+4. Driver Class: Change to `org.mariadb.jdbc.Driver`
 
 ### 🧶 Create the model in Stardog Designer
 
