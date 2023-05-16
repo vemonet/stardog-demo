@@ -43,7 +43,7 @@ services:
     volumes:
       - ./conf:/data
     command: tail -f /dev/null
-    # command: ontop bootstrap -p /data/ontop.properties -m /data/ontop-mappings.odba -t ontop-ontology.owl
+    #ontop bootstrap -b "https://w3id.org/stroke-prediction/" -p /data/ontop.properties -m /data/ontop-mappings.odba -t ontop-ontology.owl
     # ports:
     #   - 8047:8047 # web and REST
     # environment:
