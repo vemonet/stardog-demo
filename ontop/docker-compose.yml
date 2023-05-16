@@ -13,13 +13,13 @@ services:
       - POSTGRES_USER=dbuser
       - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
       # - POSTGRES_DB=heart_failure_db
-    ports:
-      - 5432:5432
     volumes:
       # Copy the sql script to create tables
       - ./conf/stroke_prediction_cohort1_postgres.sql:/docker-entrypoint-initdb.d/stroke_prediction_cohort1_postgres.sql
       - ./conf/stroke-prediction-cohort1.csv:/data/stroke-prediction-cohort1.csv
       # - ./data/postgres:/var/lib/postgresql/data
+    # ports:
+    #   - 5432:5432
 
 
   stroke-prediction-mariadb-ontop2:
