@@ -1,0 +1,84 @@
+version: '3'
+
+# Docs: https://docs.stardog.com/get-started/install-stardog/docker
+# Issue posted: https://community.stardog.com/t/deploy-stardog-behind-a-reverse-nginx-proxy/3126
+
+services:
+
+  stroke-prediction-postgres-ontop1:
+    image: postgres
+    # image: postgres:10.5
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=dbuser
+      - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
+      # - POSTGRES_DB=heart_failure_db
+    ports:
+      - 5432:5432
+    volumes:
+      # Copy the sql script to create tables
+      - ./sql-vkg/stroke_prediction_cohort1_postgres.sql:/docker-entrypoint-initdb.d/stroke_prediction_cohort1_postgres.sql
+      - ./sql-vkg/stroke-prediction-cohort1.csv:/data/stroke-prediction-cohort1.csv
+      # - ./data/postgres:/var/lib/postgresql/data
+
+
+  stroke-prediction-mariadb-ontop2:
+    restart: unless-stopped
+    image: mariadb
+    # ports:
+    #   - 3306:3306
+    volumes:
+      - ./sql-vkg/stroke_prediction_cohort2_mariadb.sql:/docker-entrypoint-initdb.d/stroke_prediction_cohort2_mariadb.sql
+      - ./sql-vkg/stroke-prediction-cohort2.csv:/data/stroke-prediction-cohort2.csv
+      # - ./data/mariadb:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${PASSWORD-passwordtochange}
+      MARIADB_USER: dbuser
+    # command: --max-allowed-packet=16M --local_infile=1
+
+
+  ontop:
+    image: ontop/ontop
+    restart: unless-stopped
+    volumes:
+      - ./conf:/data
+    command: tail -f /dev/null
+    # command: ontop bootstrap -p /data/ontop.properties -m /data/ontop-mappings.odba -t ontop-ontology.owl
+    # ports:
+    #   - 8047:8047 # web and REST
+    # environment:
+    #   - ONTOP_MAPPING_FILE=/data/ontop.rml.ttl
+    #   - ONTOP_ONTOLOGY_FILE=/data/ontop.rdf
+    #   - ONTOP_DB_USER=dbuser
+    #   - ONTOP_DB_PASSWORD=${PASSWORD:-passwordtochange}
+    #   # - ONTOP_PROPERTIES_FILE=/data/ontop.properties
+    #   # https://ontop-vkg.org/guide/advanced/configuration.html
+
+
+
+  # heart-failure-drill:
+  #   image: apache/drill
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./:/data
+  #     # - ./drill-override.conf:/opt/drill/conf/drill-override.conf
+  #   # ports:
+  #   #   - 8047:8047 # web and REST
+  #   #   - 31010:31010 # JDBC
+  #   stdin_open: true
+  #   environment:
+  #     - DRILLBIT_MAX_PROC_MEM=8G
+  #     - DRILL_HEAP=4G
+  #     - DRILL_MAX_DIRECT_MEMORY=8G
+  #     - DRILLBIT_CODE_CACHE_SIZE=1G
+
+
+  # stardog-studio:
+  #   image: stardog/stardog-studio:current
+  #   container_name: stardog-studio
+  #   restart: unless-stopped
+  #   environment:
+  #     - LETSENCRYPT_HOST=studio.stardog.137.120.31.102.nip.io
+  #     - VIRTUAL_HOST=studio.stardog.137.120.31.102.nip.io
+  #     - VIRTUAL_PORT=8080
+  #   network_mode: bridge
