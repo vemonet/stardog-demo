@@ -32,8 +32,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
       # - POSTGRES_DB=heart_failure_db
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       # Copy the sql script to create tables
       - ./sql-vkg/patients_cohort1_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort1_postgres.sql
@@ -46,8 +46,8 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       - ./sql-vkg/patients_cohort2_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort2_postgres.sql
       - ./sql-vkg/PATIENTS_cohort2.csv:/data/PATIENTS_cohort2.csv
