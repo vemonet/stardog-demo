@@ -22,6 +22,8 @@ Stardog proposes 3 main interfaces to manage your knowledge graphs:
 
 * **Explorer** to do full text searches 
 
+---
+
 ## 🧑‍💻 Create a Virtual Knowledge Graph
 
 To federate SQL databases
@@ -30,7 +32,7 @@ To federate SQL databases
 
 Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
 
-**Add PostgreSQL cohort 1 and 2:**
+**Add PostgreSQL database sources for cohort 1 and 2:**
 
 1. Data Source Type: PostgreSQL
 
@@ -43,7 +45,7 @@ Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/stu
 3. JDBC username is `postgres`, and the password is the one you defined (or `passwordtochange` if you kept the default)
 4. Driver Class: keep `org.postgresql.Driver` 
 
-**Add MariaDB cohort 3:**
+**Add MariaDB database source for cohort 3:**
 
 1. Data Source Type: MariaDB
 
@@ -56,6 +58,8 @@ Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/stu
 3. JDBC username is `root`, and the password is the one you defined (or `passwordtochange` if you kept the default), 
 
 4. Driver Class: ⚠️ change to `org.mariadb.jdbc.Driver` 
+
+---
 
 ### 🧶 Create the model and mappings in Stardog Designer
 
@@ -117,6 +121,8 @@ WHERE {
 }
 ```
 
+---
+
 ### 🏁 Query the virtual graph in Stardog Studio
 
 Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
@@ -156,6 +162,8 @@ WHERE {
 ```
 
 > See the [Stardog introduction to SPARQL](https://docs.stardog.com/getting-started-series/getting-started-1) if you need to.
+
+---
 
 ## ℹ️ Additional infos
 
@@ -211,6 +219,20 @@ SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-prediction-coh
 
 > TODO
 
+### 🔗 Links
+
+The Stardog documentation is quite consequent, please look into it when you want to do something: **https://docs.stardog.com**
+
+* Docs to easily load CSV/JSON through the UI: https://docs.stardog.com/virtual-graphs/importing-json-csv-files
+
+* Docs to access the SPARQL, HTTP, GRAPHQL APIs: https://stardog-union.github.io/http-docs/
+
+Community forum: https://community.stardog.com
+
+Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
+
+---
+
 ## 🚀 Deploy the stack
 
 Requirements: docker 🐳 
@@ -240,16 +262,4 @@ docker-compose up -d
 ```
 
 > ℹ️ The PostgreSQL database will be automatically initialized using the schema and data in `sql-vkg/`
-
-## 🔗 Links
-
-The Stardog documentation is quite consequent, please look into it when you want to do something: **https://docs.stardog.com**
-
-* Docs to easily load CSV/JSON through the UI: https://docs.stardog.com/virtual-graphs/importing-json-csv-files
-
-* Docs to access the SPARQL, HTTP, GRAPHQL APIs: https://stardog-union.github.io/http-docs/
-
-Community forum: https://community.stardog.com
-
-Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
 
