@@ -2,36 +2,25 @@
 
 Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplestore using data from a PostgreSQL database.
 
-## 🚀 Deploy the stack
+## 🐕‍🦺 Access IDS Stardog
 
-Requirements: docker 🐳 
+1. Go to **https://cloud.stardog.com** 
 
-Deploys a local Stardog triplestore, a PostgreSQL database, and a MariaDB SQL database to create a Virtual Knowledge Graph (VKG).
+2. Connect with your Google account (or any other option)
+3. Create a **New Connection** for the Stardog server deployed at IDS
+   1. Provide the username and password you were given by the IDS Stardog admin (Vincent probably)
+   2. And the IDS Stardog server endpoint URL: **https://stardog.137.120.31.102.nip.io**
+4. You can now connect to IDS server, create database, create model, etc
 
-⚠️ You will need to get your Stardog license at https://www.stardog.com/license-request
+In the future you will just need to reconnect to https://cloud.stardog.com with your Google account, and access IDS Stardog server from there (it will save your connections credentials)
 
-Place the `stardog-license-key.bin` file in the root folder of this repository.
+Stardog proposes 3 main interfaces to manage your knowledge graphs:
 
-Download the JDBC drivers in the `drivers/` folder by running this script:
+* **Designer** to define models
 
-```bash
-./prepare.sh
-```
+* **Studio** to query and navigate your KG
 
-> Optionally create a `.env` file with the password for the SQL database, otherwise the default is `passwordtochange`:
->
-> ```bash
-> echo "PASSWORD=yourpassword" > .env
-> ```
->
-
-Start Stardog and postgreSQL:
-
-```bash
-docker-compose up -d
-```
-
-> ℹ️ The PostgreSQL database will be automatically initialized using the schema and data in `sql-vkg/`
+* **Explorer** to do full text searches 
 
 ## 🧑‍💻 Create a SQL VKG
 
@@ -43,10 +32,10 @@ Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/stu
 
 1. Data Source Type: PostgreSQL
 
-2. JDBC Connection URL:
+2. JDBC Connection URL (change 1 to 2 for cohort 2):
 
    ```
-   jdbc:postgresql://stroke-prediction-postgres-cohort1:5432/stroke_prediction_dataset_cohort1
+   jdbc:postgresql://postgres-patients-cohort1:5432/patients_dataset_cohort1
    ```
 
 3. JDBC username is `postgres`, and the password is the one you defined (or `passwordtochange` if you kept the default)
@@ -59,28 +48,72 @@ Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/stu
 2. JDBC Connection URL:
 
    ```
-   jdbc:mariadb://stroke-prediction-mariadb-cohort3:3306/stroke_prediction_dataset_cohort3
+   jdbc:mariadb://mariadb-patients-cohort3:3306/patients_dataset_cohort3
    ```
 
 3. JDBC username is `root`, and the password is the one you defined (or `passwordtochange` if you kept the default), 
 
-4. Driver Class: Change to `org.mariadb.jdbc.Driver`
+4. Driver Class: ⚠️ change to `org.mariadb.jdbc.Driver` 
 
-### 🧶 Create the model in Stardog Designer
+### 🧶 Create the model and mappings in Stardog Designer
 
 Go to the [**Stardog Designer**](https://cloud.stardog.com/u/1/designer/#/)
 
-You can either import the model and mappings we created with the `sql-vkg/patient-model/Heart_Failure_DB.stardogdesigner` file.
+To create a new model and mappings manually:
 
-Or you can create a new project and mappings manually:
+* Add **Patient** and **Death** classes with properties from the [OMOP Common Data Model](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/)
 
-* Add a **Patient** with properties `age`, `gender`, `stroke`
-* Create a new project resource > New Virtual Graph > PostgreSQL > Select the `stroke_data` table
-* Provide a name for the resource, and click create
+* Create a **new project resource** > New Virtual Graph > PostgreSQL
+
+  * Select the `patients` table if the option is available,
+
+  * Otherwise provide the following custom SQL query to retrieve the patients table:
+
+    ```sql
+    SELECT * FROM patients
+    ```
+
+* Provide a **name for the resource**, such as `cohort1`,and click create
+
 * On the canvas click the newly created resource, and click **Add mapping** to map it to the **Patient** model
+
 * In the mapping interface connect the 3 properties of our Patient to the right columns in the SQL table. 
 
 Finally publish your model to the database of your choice in Stardog
+
+> Alternatively you can import the model and mappings previously created from the `.stardogdesigner` file in the `sql-vkg/` folder.
+
+You can manually edit the generated mappings to **define more complex transformations**. For example here we convert the gender from M/F to 0/1 to comply with the OMOP CDM:
+
+```SPARQL
+# cohort1
+MAPPING
+FROM SQL {
+  SELECT *, (CASE "gender"
+    WHEN 'M' THEN '0'
+    WHEN 'F' THEN '1'
+  END) AS gender_id FROM "patients_dataset_cohort1"."public"."patients"
+}
+TO {
+  ?Death_iri a <tag:stardog:designer:omop-cdm:model:Death> ;
+    <tag:stardog:designer:omop-cdm:model:death_date> ?dod_date_field .
+
+  ?Person_iri a <tag:stardog:designer:omop-cdm:model:Person> ;
+    <tag:stardog:designer:omop-cdm:model:year_of_birth> ?dob_integer_field ;
+    <tag:stardog:designer:omop-cdm:model:gender_concept_id> ?gender_integer_field ;
+    <tag:stardog:designer:omop-cdm:model:person_id> ?subject_id_integer_field .
+
+  ?Death_iri <tag:stardog:designer:omop-cdm:model:person_id_1> ?Person_iri .
+}
+WHERE {
+  BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
+  BIND(StrDt(?dob, <http://www.w3.org/2001/XMLSchema#integer>) AS ?dob_integer_field)
+  BIND(StrDt(?gender_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?gender_integer_field)
+  BIND(StrDt(?subject_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?subject_id_integer_field)
+  BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Death:{subject_id}") AS ?Death_iri)
+  BIND(StrDt(?dod, <http://www.w3.org/2001/XMLSchema#date>) AS ?dod_date_field)
+}
+```
 
 ### 🏁 Query the Virtual Graph in Stardog Studio
 
@@ -88,36 +121,36 @@ Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/
 
 Or directly query the SPARQL endpoint at https://stardog.137.120.31.102.nip.io/icare4cvd-demo
 
-To query all VKGs with SPARQL:
+**Query all VKGs with SPARQL:**
 
 ```sparql
 SELECT *
 FROM stardog:context:virtual
 WHERE {
     ?s ?p ?o .
-} LIMIT 100000
+} LIMIT 10000
 ```
 
-Or a specific VKG using its name, e.g.:
+**Query a specific VKG using its name:**
 
 ```sparql
 SELECT *
 WHERE {
-  GRAPH <virtual://Heart_Failure_DB__data__heart_failure_demo> {
+  GRAPH <virtual://omop-cdm__data__postgres_patients_cohort1> {
     ?s ?p ?o .
   }
-} LIMIT 100000
+} LIMIT 10000
 ```
 
-Get all properties/values for all persons in the graph:
+**Get properties/values for all persons in the graph:**
 
 ```SPARQL
 SELECT *
 FROM stardog:context:virtual
 WHERE {
-    ?s a icare4cvd-omop:Person ;
+    ?s a omop-cdm:Person ;
         ?p ?o .
-} LIMIT 100000
+} LIMIT 10000
 ```
 
 ## ℹ️ Additional infos
@@ -132,7 +165,7 @@ For this demo we use the MIMIC-III dataset downloaded from https://www.kaggle.co
 > * https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction, 
 > * or with unstructured data: https://zenodo.org/record/1421616#.Y5iWerKZOLo
 
-### 🧞 Generate SQL schema
+### 🧞 Generate SQL schema for CSV files
 
 Install dependencies:
 
@@ -156,37 +189,15 @@ Fix the password, cf. https://docs.stardog.com/stardog-admin-cli-reference/user/
 docker-compose exec stardog stardog-admin user passwd --username admin admin
 ```
 
-## 🗺️ Convert SMS mappings to R2RML
+### 🗺️ Convert SMS mappings to R2RML
+
+To run in the Stardog docker container:
 
 ```bash
-stardog-admin virtual mappings -f r2rml virtualgraph
+docker-compose exec stardog stardog-admin virtual mappings -f r2rml virtualgraph
 ```
 
-Define more complex SMS mappings:
-
-```SPARQL
-# cohort1
-MAPPING
-FROM SQL {
-  SELECT *, (CASE "gender"
-    WHEN 'Male' THEN '0'
-    WHEN 'Female' THEN '1'
-  END) AS GENDER_ID FROM "stroke_prediction_dataset_cohort1"."public"."stroke_prediction_cohort1"   
-}
-TO {
-  ?Patient_iri a <tag:stardog:designer:icare4cvd:model:Patient> ;
-    <tag:stardog:designer:icare4cvd:model:age> ?age ;
-    <tag:stardog:designer:icare4cvd:model:gender> ?gender ;
-    <tag:stardog:designer:icare4cvd:model:genderId> ?GENDER_ID ;
-    <tag:stardog:designer:icare4cvd:model:stroke> ?stroke_boolean_field .
-}
-WHERE {
-  BIND(TEMPLATE("tag:stardog:designer:icare4cvd:data:Patient:{id}") AS ?Patient_iri)
-  BIND(StrDt(?stroke, <http://www.w3.org/2001/XMLSchema#boolean>) AS ?stroke_boolean_field)
-}
-```
-
-## 🔩 Create a VKG with Apache Drill
+### 🔩 Create a VKG with Apache Drill
 
 SQL query:
 
@@ -196,9 +207,45 @@ SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-prediction-coh
 
 > TODO
 
-### 🔗 Links
+## 🚀 Deploy the stack
 
-* Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
+Requirements: docker 🐳 
 
-* APIs docs: https://stardog-union.github.io/http-docs/
+Deploys a local Stardog triplestore, a PostgreSQL database, and a MariaDB SQL database to create a Virtual Knowledge Graph (VKG).
+
+⚠️ You will need to get your Stardog license at https://www.stardog.com/license-request
+
+Place the `stardog-license-key.bin` file in the root folder of this repository.
+
+Download the JDBC drivers in the `drivers/` folder by running this script:
+
+```bash
+./prepare.sh
+```
+
+> Optionally create a `.env` file with the password for the SQL database, otherwise the default is `passwordtochange`:
+>
+> ```bash
+> echo "PASSWORD=yourpassword" > .env
+> ```
+
+Start Stardog and postgreSQL:
+
+```bash
+docker-compose up -d
+```
+
+> ℹ️ The PostgreSQL database will be automatically initialized using the schema and data in `sql-vkg/`
+
+## 🔗 Links
+
+The Stardog documentation is quite consequent, please look into it when you want to do something: **https://docs.stardog.com**
+
+* Docs to easily load CSV/JSON through the UI: https://docs.stardog.com/virtual-graphs/importing-json-csv-files
+
+* Docs to access the SPARQL, HTTP, GRAPHQL APIs: https://stardog-union.github.io/http-docs/
+
+Community forum: https://community.stardog.com
+
+Example docker-compose for cluster: https://github.com/stardog-union/pystardog/blob/develop/docker-compose.cluster.yml
 
