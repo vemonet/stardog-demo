@@ -39,7 +39,7 @@ docker-compose up -d
 
 Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
 
-**Add PostgreSQL cohort1:**
+**Add PostgreSQL cohort 1 and 2:**
 
 1. Data Source Type: PostgreSQL
 
@@ -52,14 +52,14 @@ Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/stu
 3. JDBC username is `postgres`, and the password is the one you defined (or `passwordtochange` if you kept the default)
 4. Driver Class: keep `org.postgresql.Driver` 
 
-**Add MariaDB cohort2:**
+**Add MariaDB cohort 3:**
 
 1. Data Source Type: MariaDB
 
 2. JDBC Connection URL:
 
    ```
-   jdbc:mariadb://stroke-prediction-mariadb-cohort2:3306/stroke_prediction_dataset_cohort2
+   jdbc:mariadb://stroke-prediction-mariadb-cohort3:3306/stroke_prediction_dataset_cohort3
    ```
 
 3. JDBC username is `root`, and the password is the one you defined (or `passwordtochange` if you kept the default), 
@@ -86,6 +86,8 @@ Finally publish your model to the database of your choice in Stardog
 
 Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
 
+Or directly query the SPARQL endpoint at https://stardog.137.120.31.102.nip.io/icare4cvd-demo
+
 To query all VKGs with SPARQL:
 
 ```sparql
@@ -93,7 +95,7 @@ SELECT *
 FROM stardog:context:virtual
 WHERE {
     ?s ?p ?o .
-} LIMIT 1000
+} LIMIT 100000
 ```
 
 Or a specific VKG using its name, e.g.:
@@ -104,28 +106,31 @@ WHERE {
   GRAPH <virtual://Heart_Failure_DB__data__heart_failure_demo> {
     ?s ?p ?o .
   }
-} LIMIT 1000
+} LIMIT 100000
 ```
 
-Directly query the SPARQL endpoint at https://stardog.137.120.31.102.nip.io/stroke-prediction-demo
+Get all properties/values for all persons in the graph:
 
-## 🔩 Create a VKG with Apache Drill
-
-SQL query:
-
-```sql
-SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-prediction-cohort1.csv` LIMIT 3
+```SPARQL
+SELECT *
+FROM stardog:context:virtual
+WHERE {
+    ?s a icare4cvd-omop:Person ;
+        ?p ?o .
+} LIMIT 100000
 ```
-
-> TODO
 
 ## ℹ️ Additional infos
 
 ### 📊 Input data
 
-For this demo we use a dataset splitted in 2 to simulate 2 cohorts: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+For this demo we use the MIMIC-III dataset downloaded from https://www.kaggle.com/datasets/asjad99/mimiciii?resource=download
 
-> Other potential datasets: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction, or with unstructured data: https://zenodo.org/record/1421616#.Y5iWerKZOLo
+> Other potential datasets: 
+>
+> * splitted in 2 to simulate 2 cohorts: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+> * https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction, 
+> * or with unstructured data: https://zenodo.org/record/1421616#.Y5iWerKZOLo
 
 ### 🧞 Generate SQL schema
 
@@ -151,6 +156,45 @@ Fix the password, cf. https://docs.stardog.com/stardog-admin-cli-reference/user/
 docker-compose exec stardog stardog-admin user passwd --username admin admin
 ```
 
+## 🗺️ Convert SMS mappings to R2RML
+
+```bash
+stardog-admin virtual mappings -f r2rml virtualgraph
+```
+
+Define more complex SMS mappings:
+
+```SPARQL
+# cohort1
+MAPPING
+FROM SQL {
+  SELECT *, (CASE "gender"
+    WHEN 'Male' THEN '0'
+    WHEN 'Female' THEN '1'
+  END) AS GENDER_ID FROM "stroke_prediction_dataset_cohort1"."public"."stroke_prediction_cohort1"   
+}
+TO {
+  ?Patient_iri a <tag:stardog:designer:icare4cvd:model:Patient> ;
+    <tag:stardog:designer:icare4cvd:model:age> ?age ;
+    <tag:stardog:designer:icare4cvd:model:gender> ?gender ;
+    <tag:stardog:designer:icare4cvd:model:genderId> ?GENDER_ID ;
+    <tag:stardog:designer:icare4cvd:model:stroke> ?stroke_boolean_field .
+}
+WHERE {
+  BIND(TEMPLATE("tag:stardog:designer:icare4cvd:data:Patient:{id}") AS ?Patient_iri)
+  BIND(StrDt(?stroke, <http://www.w3.org/2001/XMLSchema#boolean>) AS ?stroke_boolean_field)
+}
+```
+
+## 🔩 Create a VKG with Apache Drill
+
+SQL query:
+
+```sql
+SELECT COLUMNS[0] AS id, COLUMNS[1] AS age FROM dfs.`/data/stroke-prediction-cohort1.csv` LIMIT 3
+```
+
+> TODO
 
 ### 🔗 Links
 
