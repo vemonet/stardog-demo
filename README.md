@@ -1,8 +1,8 @@
-# 🦮💫 Create a Virtual Knowledge Graph with Stardog
+# 🐕‍🦺💫 Create a Virtual Knowledge Graph with Stardog
 
 Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplestore using data from a PostgreSQL database.
 
-## 🐕‍🦺 Access IDS Stardog
+## ➡️ Access IDS Stardog
 
 1. Go to **https://cloud.stardog.com** 
 
@@ -22,7 +22,9 @@ Stardog proposes 3 main interfaces to manage your knowledge graphs:
 
 * **Explorer** to do full text searches 
 
-## 🧑‍💻 Create a SQL VKG
+## 🧑‍💻 Create a Virtual Knowledge Graph
+
+To federate SQL databases
 
 ### 🔌 Create the data sources in Stardog Studio
 
@@ -61,7 +63,7 @@ Go to the [**Stardog Designer**](https://cloud.stardog.com/u/1/designer/#/)
 
 To create a new model and mappings manually:
 
-* Add **Patient** and **Death** classes with properties from the [OMOP Common Data Model](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/)
+* Add **classes with their properties** from the [OMOP Common Data Model](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/), e.g. Patient, Death
 
 * Create a **new project resource** > New Virtual Graph > PostgreSQL
 
@@ -115,7 +117,7 @@ WHERE {
 }
 ```
 
-### 🏁 Query the Virtual Graph in Stardog Studio
+### 🏁 Query the virtual graph in Stardog Studio
 
 Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
 
@@ -152,6 +154,8 @@ WHERE {
         ?p ?o .
 } LIMIT 10000
 ```
+
+> See the [Stardog introduction to SPARQL](https://docs.stardog.com/getting-started-series/getting-started-1) if you need to.
 
 ## ℹ️ Additional infos
 

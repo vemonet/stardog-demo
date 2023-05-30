@@ -4,6 +4,15 @@ A docker image and docker-compose deployment for Apache NiFi with the Stardog ex
 
 ### Deploy locally
 
+Download libs required for NiFi:
+
+```bash
+STARDOG_VERSION_NUMBER=8.2.1
+mkdir -p nifi-lib
+cd nifi-lib
+wget http://downloads.stardog.com/extras/stardog-extras-$STARDOG_VERSION_NUMBER.zip
+```
+
 Build and start the docker container locally:
 
 ```bash
