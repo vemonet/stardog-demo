@@ -1,7 +1,5 @@
 version: '3'
-
 # Docs: https://docs.stardog.com/get-started/install-stardog/docker
-
 services:
 
   # Deploy a Stardog server
@@ -26,8 +24,7 @@ services:
 
   # Deploy SQL databases for the MIMIC-IV dataset
   postgres-mimic-iv:
-    image: postgres
-    # image: postgres:10.5
+    image: postgres:15.3
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
@@ -37,35 +34,32 @@ services:
     #   - 5432:5432
     volumes:
       # Copy the sql script to create tables
-      - ./virtual-kg/patients_cohort1_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort1_postgres.sql
+      - ./virtual-kg/postgres_mimic_iv.sql:/docker-entrypoint-initdb.d/postgres_mimic_iv.sql
       - ./virtual-kg/mimic-iv-2.2:/data
       # - ./data/postgres:/var/lib/postgresql/data
 
   postgres-mimic-iv-2:
-    image: postgres
+    image: postgres:15.3
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${PASSWORD:-passwordtochange}
-    # ports:
-    #   - 5432:5432
     volumes:
-      - ./virtual-kg/patients_cohort2_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort2_postgres.sql
+      - ./virtual-kg/postgres_mimic_iv_2.sql:/docker-entrypoint-initdb.d/postgres_mimic_iv_2.sql
       - ./virtual-kg/mimic-iv-2.2:/data
-
 
   mariadb-mimic-iv:
     restart: unless-stopped
-    image: mariadb
-    # ports:
-    #   - 3306:3306
+    image: mariadb:11.0-rc
     volumes:
-      - ./virtual-kg/patients_cohort3_mariadb.sql:/docker-entrypoint-initdb.d/patients_cohort3_mariadb.sql
+      - ./virtual-kg/mariadb_mimic_iv.sql:/docker-entrypoint-initdb.d/mariadb_mimic_iv.sql
       - ./virtual-kg/mimic-iv-2.2:/data
       # - ./data/mariadb:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${PASSWORD-passwordtochange}
       MARIADB_USER: user
+    # ports:
+    #   - 3306:3306
     # command: --max-allowed-packet=16M --local_infile=1
 
 
@@ -87,8 +81,8 @@ services:
   #     # - ONTOP_PROPERTIES_FILE=/data/ontop.properties
   #     # https://ontop-vkg.org/guide/advanced/configuration.html
 
-
-  # drill-patients:
+  # NOTE: To serve CSV files directly as SQL, we could also use LakeFS
+  # drill:
   #   image: apache/drill
   #   restart: unless-stopped
   #   volumes:

@@ -148,7 +148,7 @@ WHERE {
 ```sparql
 SELECT *
 WHERE {
-  GRAPH <virtual://omop-cdm__data__postgres_patients_cohort1> {
+  GRAPH <virtual://omop-cdm__data__postgres_mimic_iv> {
     ?s ?p ?o .
   }
 } LIMIT 10000
