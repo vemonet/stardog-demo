@@ -24,7 +24,7 @@ Stardog proposes 3 main interfaces to manage your knowledge graphs:
 
 ---
 
-## 🧑‍💻 Create a Virtual Knowledge Graph
+## ⚛️ Create a Virtual Knowledge Graph
 
 To federate SQL databases
 
@@ -123,7 +123,7 @@ WHERE {
 
 ---
 
-### 🏁 Query the virtual graph in Stardog Studio
+### 💬 Query the virtual graph in Stardog Studio
 
 Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
 
@@ -208,7 +208,7 @@ LIMIT 1000
 
 ## ℹ️ Additional infos
 
-### 📊 Input data
+### 📦️ Input data
 
 For this demo we use the MIMIC-III dataset downloaded from https://www.kaggle.com/datasets/asjad99/mimiciii?resource=download
 
