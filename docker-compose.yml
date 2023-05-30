@@ -23,7 +23,9 @@ services:
     # Make sure system metadata and databases are properly upgraded:
     # command: --upgrade
 
-  postgres-patients-cohort1:
+
+  # Deploy SQL databases for the MIMIC-IV dataset
+  postgres-mimic-iv:
     image: postgres
     # image: postgres:10.5
     restart: unless-stopped
@@ -36,10 +38,10 @@ services:
     volumes:
       # Copy the sql script to create tables
       - ./virtual-kg/patients_cohort1_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort1_postgres.sql
-      - ./virtual-kg/data:/data
+      - ./virtual-kg/mimic-iv-2.2:/data
       # - ./data/postgres:/var/lib/postgresql/data
 
-  postgres-patients-cohort2:
+  postgres-mimic-iv-2:
     image: postgres
     restart: unless-stopped
     environment:
@@ -49,17 +51,17 @@ services:
     #   - 5432:5432
     volumes:
       - ./virtual-kg/patients_cohort2_postgres.sql:/docker-entrypoint-initdb.d/patients_cohort2_postgres.sql
-      - ./virtual-kg/data:/data
+      - ./virtual-kg/mimic-iv-2.2:/data
 
 
-  mariadb-patients-cohort3:
+  mariadb-mimic-iv:
     restart: unless-stopped
     image: mariadb
     # ports:
     #   - 3306:3306
     volumes:
       - ./virtual-kg/patients_cohort3_mariadb.sql:/docker-entrypoint-initdb.d/patients_cohort3_mariadb.sql
-      - ./virtual-kg/data:/data
+      - ./virtual-kg/mimic-iv-2.2:/data
       # - ./data/mariadb:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${PASSWORD-passwordtochange}

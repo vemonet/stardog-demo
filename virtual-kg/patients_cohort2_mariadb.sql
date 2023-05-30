@@ -1,5 +1,5 @@
 CREATE DATABASE mimic_iv;
-\c mimic_iv
+USE mimic_iv;
 
 CREATE TABLE patients (
 	subject_id INTEGER NOT NULL,
@@ -10,7 +10,9 @@ CREATE TABLE patients (
 	dod DATE NULL
 );
 
-COPY patients FROM '/data/hosp/patients_cohort1.csv' WITH (FORMAT csv, DELIMITER ',', HEADER true);
-
+LOAD DATA INFILE '/data/hosp/patients_cohort2.csv'
+INTO TABLE patients
+FIELDS TERMINATED BY ','
+IGNORE 1 LINES;
 
 SELECT * FROM patients LIMIT 3;

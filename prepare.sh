@@ -13,3 +13,16 @@ mv mysql-connector-j-*/mysql-connector-j-*.jar .
 rm -rf mysql-connector-j-*.zip mysql-connector-j-*/
 
 echo "✅ JDBC drivers downloaded in the drivers/ folder"
+cd ..
+
+if [ -d "virtual-kg/mimic-iv-2.2" ]; then
+    echo "👥 Preparing cohorts from predownloaded MIMIC-IV files"
+
+    cd virtual-kg/mimic-iv-2.2/hosp
+    head -n 150000 patients.csv > patients_cohort1.csv
+    head -n 1 patients.csv > patients_cohort2.csv
+    tail -n 149713 patients.csv >> patients_cohort2.csv
+
+else
+    echo "⚠️ No MIMIC-IV data detected"
+fi

@@ -2,6 +2,8 @@
 
 Repository to demo how to create a Virtual Knowledge Graph in a Stardog triplestore using data from a PostgreSQL database.
 
+For this demo we use the **MIMIC-IV dataset**, more details and request access at https://physionet.org/content/mimiciv/2.2/
+
 ## ➡️ Access IDS Stardog
 
 1. Go to **https://cloud.stardog.com**
@@ -30,29 +32,31 @@ To federate SQL databases
 
 ### 🔌 Create the data sources in Stardog Studio
 
-Go to the [**Data** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/data), and click the **+** button to add a data source.
+Go to the [**Data** tab](https://cloud.stardog.com/u/1/studio/#/data) in **Stardog Studio**, and click the **+** button to add a data source.
 
 **Add PostgreSQL database sources for cohort 1 and 2:**
 
 1. Data Source Type: PostgreSQL
 
-2. JDBC Connection URL (change 1 to 2 for cohort 2):
+2. JDBC Connection URL (use `postgres-mimic-iv-2` for cohort 2):
 
    ```
-   jdbc:postgresql://postgres-patients-cohort1:5432/patients_dataset_cohort1
+   jdbc:postgresql://postgres-mimic-iv:5432/mimic_iv
    ```
 
 3. JDBC username is `postgres`, and the password is the one you defined (or `passwordtochange` if you kept the default)
 4. Driver Class: keep `org.postgresql.Driver`
 
-**Add MariaDB database source for cohort 3:**
+**Add MariaDB database source for cohort 2:**
+
+Alternatively you could also use MariaDB instead of PostgreSQL for cohort 2:
 
 1. Data Source Type: MariaDB
 
 2. JDBC Connection URL:
 
    ```
-   jdbc:mariadb://mariadb-patients-cohort3:3306/patients_dataset_cohort3
+   jdbc:mariadb://mariadb-mimic-iv:3306/mimic_iv
    ```
 
 3. JDBC username is `root`, and the password is the one you defined (or `passwordtochange` if you kept the default),
@@ -67,7 +71,7 @@ Go to the [**Stardog Designer**](https://cloud.stardog.com/u/1/designer/#/)
 
 To create a new model and mappings manually:
 
-* Add **classes with their properties** from the [OMOP Common Data Model](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/), e.g. Patient, Death
+* Add **classes with their properties** from the [**OMOP Common Data Model**](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/), e.g. Patient, Death
 
 * Create a **new project resource** > New Virtual Graph > PostgreSQL
 
@@ -98,7 +102,7 @@ FROM SQL {
   SELECT *, (CASE "gender"
     WHEN 'M' THEN '0'
     WHEN 'F' THEN '1'
-  END) AS gender_id FROM "patients_dataset_cohort1"."public"."patients"
+  END) AS gender_id FROM "mimic_iv"."public"."patients"
 }
 TO {
   ?Death_iri a <tag:stardog:designer:omop-cdm:model:Death> ;
@@ -123,9 +127,9 @@ WHERE {
 
 ---
 
-### 💬 Query the virtual graph in Stardog Studio
+### 💬 Query the virtual graphs in Stardog Studio
 
-Go to the [**Workspace** tab in **Stardog Studio**](https://cloud.stardog.com/u/1/studio/#/)
+Go to the [**Workspace** tab](https://cloud.stardog.com/u/1/studio/#/) in **Stardog Studio**
 
 Or directly query the SPARQL endpoint at https://stardog.137.120.31.102.nip.io/icare4cvd
 
@@ -207,16 +211,6 @@ LIMIT 1000
 ---
 
 ## ℹ️ Additional infos
-
-### 📦️ Input data
-
-For this demo we use the MIMIC-III dataset downloaded from https://www.kaggle.com/datasets/asjad99/mimiciii?resource=download
-
-> Other potential datasets:
->
-> * splitted in 2 to simulate 2 cohorts: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
-> * https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction,
-> * or with unstructured data: https://zenodo.org/record/1421616#.Y5iWerKZOLo
 
 ### 🧞 Generate SQL schema for CSV files
 
