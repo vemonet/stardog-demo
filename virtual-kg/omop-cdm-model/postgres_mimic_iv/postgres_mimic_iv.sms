@@ -1,16 +1,16 @@
 
 
-# cohort1
+# mimic_patients
 MAPPING
 FROM SQL {
-  SELECT * FROM "patients_dataset_cohort1"."public"."patients"
+  SELECT * FROM patients
 }
 TO {
   ?Death_iri a <tag:stardog:designer:omop-cdm:model:Death> ;
     <tag:stardog:designer:omop-cdm:model:death_date> ?dod_date_field .
 
   ?Person_iri a <tag:stardog:designer:omop-cdm:model:Person> ;
-    <tag:stardog:designer:omop-cdm:model:year_of_birth> ?dob_integer_field ;
+    <tag:stardog:designer:omop-cdm:model:year_of_birth> ?anchor_year_integer_field ;
     <tag:stardog:designer:omop-cdm:model:gender_concept_id> ?gender_integer_field ;
     <tag:stardog:designer:omop-cdm:model:person_id> ?subject_id_integer_field .
 
@@ -18,7 +18,7 @@ TO {
 }
 WHERE {
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
-  BIND(StrDt(?dob, <http://www.w3.org/2001/XMLSchema#integer>) AS ?dob_integer_field)
+  BIND(StrDt(?anchor_year, <http://www.w3.org/2001/XMLSchema#integer>) AS ?anchor_year_integer_field)
   BIND(StrDt(?gender, <http://www.w3.org/2001/XMLSchema#integer>) AS ?gender_integer_field)
   BIND(StrDt(?subject_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?subject_id_integer_field)
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Death:{subject_id}") AS ?Death_iri)
