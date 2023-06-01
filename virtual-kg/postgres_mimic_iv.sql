@@ -1,3 +1,6 @@
+-- Schemas for MIMIC tables available at:
+-- https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iv/buildmimic/postgres/create.sql
+
 CREATE DATABASE mimic_iv;
 \c mimic_iv
 

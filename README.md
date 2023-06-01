@@ -18,17 +18,15 @@ In the future you will just need to reconnect to https://cloud.stardog.com with 
 
 Stardog proposes 3 main interfaces to manage your knowledge graphs:
 
-* **Designer** to define models
-
 * **Studio** to query and navigate your KG
-
+* **Designer** to define models
 * **Explorer** to do full text searches
 
 ---
 
 ## ⚛️ Create a Virtual Knowledge Graph
 
-To federate SQL databases
+To federate multiple SQL databases
 
 ### 🔌 Create the data sources in Stardog Studio
 
@@ -67,13 +65,21 @@ Alternatively you could also use MariaDB instead of PostgreSQL for cohort 2:
 
 ---
 
-### 🧶 Create the model and mappings in Stardog Designer
+### 🧶 Create the model
 
-Go to the [**Stardog Designer**](https://cloud.stardog.com/u/1/designer/#/)
+Go to the [**Models** tab](https://cloud.stardog.com/u/1/studio/#/models) in **Stardog Studio**.
+
+Add classes with their properties from the [**OMOP Common Data Model**](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/), e.g. Patient, Death
+
+Through this interface you can browse the model through a tree view, and edit the model ontology as turtle RDF, making it easier if you need to import an existing ontology.
+
+Validation that the data complies with the model can be set using SHACL: https://docs.stardog.com/data-quality-constraints
+
+<details><summary>Model creation and mapping can also be done through the <b>Stardog Designer</b> interface, it offers limited customization of the mappings and model, but can be helpful to pre-generate mappings that are then improved manually in Stardog Studio</summary>
 
 To create a new model and mappings manually:
 
-* Add **classes with their properties** from the [**OMOP Common Data Model**](https://github.com/OHDSI/CommonDataModel/blob/main/inst/csv/), e.g. Patient, Death
+* Create classes and properties of the model
 
 * Create a **new project resource** > New Virtual Graph > PostgreSQL
 
@@ -93,12 +99,23 @@ To create a new model and mappings manually:
 
 Finally publish your model to the database of your choice in Stardog
 
-> Alternatively you can import the model and mappings previously created from the `.stardogdesigner` file in the `virtual-kg/` folder.
+</details>
 
-You can manually edit the generated mappings to **define more complex transformations** in the **Virtual Graphs** tab in Stardog Studio. For example here we convert the gender from M/F to 0/1 to comply with the OMOP CDM:
+---
+
+### 🗺️ Define the mappings
+
+In the [**Virtual Graphs** tab](https://cloud.stardog.com/u/1/studio/#/virtual-graphs) in **Stardog Studio**
+
+Mappings in Stardog is done using the Stardog Mapping Syntax (SMS).
+
+Here we provide an example of mappings from a `patients.csv` file to a Person, and it's Death, if recorded
+
+Mapping from patients to the Person class, converting the gender from M/F to 0/1 to comply with the OMOP CDM:
 
 ```SPARQL
-# mimic_patients
+# Map patients to persons
+PREFIX omop-cdm: <tag:stardog:designer:omop-cdm:model:>
 MAPPING
 FROM SQL {
   SELECT *, (CASE "gender"
@@ -107,24 +124,39 @@ FROM SQL {
   END) AS gender_id FROM patients
 }
 TO {
-  ?Death_iri a <tag:stardog:designer:omop-cdm:model:Death> ;
-    <tag:stardog:designer:omop-cdm:model:death_date> ?dod_date_field .
-
-  ?Person_iri a <tag:stardog:designer:omop-cdm:model:Person> ;
-    <tag:stardog:designer:omop-cdm:model:year_of_birth> ?anchor_year_integer_field ;
-    <tag:stardog:designer:omop-cdm:model:gender_concept_id> ?gender_integer_field ;
-    <tag:stardog:designer:omop-cdm:model:id> ?subject_id_integer_field .
-
-  ?Death_iri <tag:stardog:designer:omop-cdm:model:person_id> ?Person_iri .
+  ?Person_iri a omop-cdm:Person ;
+    omop-cdm:year_of_birth ?anchor_year_integer_field ;
+    omop-cdm:gender_concept_id ?gender_integer_field ;
+    omop-cdm:id ?subject_id_integer_field .
 }
 WHERE {
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
   BIND(StrDt(?anchor_year, <http://www.w3.org/2001/XMLSchema#integer>) AS ?anchor_year_integer_field)
   BIND(StrDt(?gender_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?gender_integer_field)
   BIND(StrDt(?subject_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?subject_id_integer_field)
+}
+```
+
+Mapping from patients to the Death class, we only create Death entities when a `dod` is present:
+
+```SPARQL
+# Map patients to deaths
+PREFIX omop-cdm: <tag:stardog:designer:omop-cdm:model:>
+MAPPING
+FROM SQL {
+  SELECT * FROM patients WHERE dod IS NOT NULL
+}
+TO {
+  ?Death_iri a omop-cdm:Death ;
+    omop-cdm:death_date ?dod_date_field .
+
+  ?Death_iri omop-cdm:person_id ?Person_iri .
+}
+WHERE {
+  BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Death:{subject_id}") AS ?Death_iri)
   BIND(StrDt(?dod, <http://www.w3.org/2001/XMLSchema#date>) AS ?dod_date_field)
-}
+}s
 ```
 
 ---
@@ -145,87 +177,65 @@ WHERE {
 } LIMIT 10000
 ```
 
+> You can also use `stardog:context:all` to query all materialized and virtual graphs.
+
 **Query a specific virtual graph** using its name:
 
 ```sparql
 SELECT *
 WHERE {
-  GRAPH <virtual://omop-cdm__data__postgres_mimic_iv> {
+  GRAPH <virtual://virtual_graph_name> {
     ?s ?p ?o .
   }
 } LIMIT 10000
 ```
 
-**Get properties/values for all persons** in the graph:
+**Get all persons**:
 
 ```SPARQL
-SELECT *
+SELECT DISTINCT ?id ?gender ?year_of_birth ?death_date
 FROM stardog:context:virtual
 WHERE {
     ?s a omop-cdm:Person ;
-        ?p ?o .
-} LIMIT 10000
+        omop-cdm:id ?id ;
+        omop-cdm:gender_concept_id ?gender ;
+        omop-cdm:year_of_birth ?year_of_birth .
+    OPTIONAL {
+        ?death omop-cdm:person_id ?s ;
+               omop-cdm:death_date ?death_date
+    }
+
+} LIMIT 1000000
 ```
 
-**Get all persons born after a specific date**:
+**Get persons with no death date**:
+
+```SPARQL
+SELECT DISTINCT ?id ?gender ?year_of_birth
+FROM stardog:context:virtual
+WHERE {
+    ?s a omop-cdm:Person ;
+        omop-cdm:id ?id ;
+        omop-cdm:gender_concept_id ?gender ;
+        omop-cdm:year_of_birth ?year_of_birth .
+    FILTER NOT EXISTS {?death omop-cdm:person_id ?s}
+
+} LIMIT 1000000
+```
+
+**Get persons born after a specific date**:
 
 ```SPARQL
 SELECT DISTINCT *
 FROM stardog:context:virtual
 WHERE {
     ?s a omop-cdm:Person ;
-        omop-cdm:year_of_birth ?birthYear ;
-        ?p ?o .
+        omop-cdm:year_of_birth ?birthYear .
     FILTER (?birthYear > 2130)
 } LIMIT 10000
 ```
 
-> You can also use `stardog:context:all` to query all materialized and virtual graphs.
-
-**Visualize a Person in the graph** with a construct query generated by Stardog:
-
-```SPARQL
-# mimic_patients
-PREFIX omop-cdm: <tag:stardog:designer:omop-cdm:model:>
-MAPPING
-FROM SQL {
-  SELECT *, (CASE "gender"
-    WHEN 'M' THEN '0'
-    WHEN 'F' THEN '1'
-  END) AS gender_id FROM patients
-}
-TO {
-  ?Death_iri a omop-cdm:Death ;
-    omop-cdm:death_date ?dod_date_field .
-
-  ?Person_iri a omop-cdm:Person ;
-    omop-cdm:year_of_birth ?anchor_year_integer_field ;
-    omop-cdm:gender_concept_id ?gender_integer_field ;
-    omop-cdm:id ?subject_id_integer_field .
-
-  ?Death_iri omop-cdm:person_id ?Person_iri .
-}
-WHERE {
-  BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
-  BIND(StrDt(?anchor_year, <http://www.w3.org/2001/XMLSchema#integer>) AS ?anchor_year_integer_field)
-  BIND(StrDt(?gender_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?gender_integer_field)
-  BIND(StrDt(?subject_id, <http://www.w3.org/2001/XMLSchema#integer>) AS ?subject_id_integer_field)
-  BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Death:{subject_id}") AS ?Death_iri)
-  BIND(StrDt(?dod, <http://www.w3.org/2001/XMLSchema#date>) AS ?dod_date_field)
-}
-```
-
 > See the [Stardog introduction to SPARQL](https://docs.stardog.com/getting-started-series/getting-started-1) if you need to.
-
----
-
-### ⚙️ Advanced configuration of models
-
-You can also access your models from the [**Models** tab](https://cloud.stardog.com/u/1/studio/#/models) in Stardog Studio.
-
-Through this interface you can browse the model through a tree view, and edit the model ontology as turtle RDF, making it easier if you need to import an existing ontology.
-
-Validation that the data complies with the model can be set using SHACL: https://docs.stardog.com/data-quality-constraints
 
 ---
 
@@ -241,7 +251,7 @@ source .venv/bin/activate
 pip install csvkit mysql-connector-python
 ```
 
-Generate schema from CSV. Note it needs to be manually fixed as they don't add `(128)` after the VARCHAR
+Generate schema from CSV. Note it needs to be manually fixed as they don't add `(128)` after VARCHAR
 
 ```bash
 csvsql --db mysql://user:password@localhost:3306/heart-failure-db --insert stroke-prediction-cohort1.csv
@@ -287,11 +297,9 @@ Example docker-compose for cluster: https://github.com/stardog-union/pystardog/b
 
 ## 🚀 Deploy the stack
 
-Requirements: docker 🐳
+Requirements: docker 🐳, and you will need to get your **Stardog license** at https://www.stardog.com/license-request ⚠️
 
 Deploys a local Stardog triplestore, a PostgreSQL database, and a MariaDB SQL database to create a Virtual Knowledge Graph (VKG).
-
-⚠️ You will need to get your Stardog license at https://www.stardog.com/license-request
 
 Place the `stardog-license-key.bin` file in the root folder of this repository.
 
