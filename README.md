@@ -156,7 +156,7 @@ WHERE {
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Person:{subject_id}") AS ?Person_iri)
   BIND(TEMPLATE("tag:stardog:designer:omop-cdm:data:Death:{subject_id}") AS ?Death_iri)
   BIND(StrDt(?dod, <http://www.w3.org/2001/XMLSchema#date>) AS ?dod_date_field)
-}s
+}
 ```
 
 ---
@@ -222,6 +222,25 @@ WHERE {
 
 } LIMIT 1000000
 ```
+
+**Get how many years the patients stayed in hospital before dying**:
+
+```SPARQL
+SELECT DISTINCT ?id ?gender ?year_of_birth ?death_date (?year_of_death - ?year_of_birth AS ?age_of_death)
+FROM stardog:context:virtual
+WHERE {
+    ?s a omop-cdm:Person ;
+        omop-cdm:id ?id ;
+        omop-cdm:gender_concept_id ?gender ;
+        omop-cdm:year_of_birth ?year_of_birth .
+        ?death omop-cdm:person_id ?s ;
+               omop-cdm:death_date ?death_date
+   BIND(xsd:integer(STRBEFORE(str(?death_date), "-")) AS ?year_of_death)
+
+} LIMIT 1000000
+```
+
+> ⚠️ `omop-cdm:year_of_birth` is not the year of birth, but the year of admission at the hospital (to be fixed)
 
 **Get persons born after a specific date**:
 
