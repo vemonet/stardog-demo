@@ -109,7 +109,7 @@ In the [**Virtual Graphs** tab](https://cloud.stardog.com/u/1/studio/#/virtual-g
 
 Mappings in Stardog is done using the Stardog Mapping Syntax (SMS).
 
-Here we provide an example of mappings from a `patients.csv` file to a Person, and it's Death, if recorded
+Here we provide an example of mappings from a `patients.csv` file to a Person, and it's Death, if recorded.
 
 Mapping from patients to the Person class, converting the gender from M/F to 0/1 to comply with the OMOP CDM:
 
